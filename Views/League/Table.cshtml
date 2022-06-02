@@ -1,0 +1,121 @@
+@using FootballLeagueManagementSystem.Controllers
+@model List<FootballLeagueManagementSystem.Controllers.TeamWithMatches>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<table class="table table-bordered table-striped" style="width: 100%">
+    <thead>
+    <tr>
+        <th>
+            Team name
+        </th>
+        <th>
+            Games played
+        </th>
+        <th>
+            Wins
+        </th>
+        <th>
+            Draws
+        </th>
+        <th>
+            Loses
+        </th>
+        <th>
+            Goals scored
+        </th>
+        <th>
+            Goals conceded
+        </th>
+        <th>
+            Goal Difference
+        </th>
+        <th>
+            Points
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (TeamWithMatches obj in Model)
+    {
+        var countOfWins = 0;
+        var countOfDraws = 0;
+        var countOfLoses = 0;
+        var countOfGoalsScored = 0;
+        var countOfGoalsConceded = 0;
+        var countOfPoints = 0;
+        var goalDifference = 0;
+        List<Match> homeMatches = obj.Matches.Where(m => m.HomeTeam == obj.Team).ToList();
+        List<Match> awayMatches = obj.Matches.Where(m => m.AwayTeam == obj.Team).ToList();
+        foreach (var homeMatch in homeMatches)
+        {
+            countOfGoalsScored += homeMatch.HomeTeamGoals;
+            countOfGoalsConceded += homeMatch.AwayTeamGoals;
+            if (homeMatch.HomeTeamGoals > homeMatch.AwayTeamGoals)
+            {
+                countOfWins += 1;
+                countOfPoints += 3;
+                continue;
+            }
+            if (homeMatch.HomeTeamGoals < homeMatch.AwayTeamGoals)
+            {
+                countOfLoses += 1;
+                continue;
+            }
+            countOfDraws += 1;
+            countOfPoints += 1;
+        }
+        foreach (var homeMatch in awayMatches)
+        {
+            countOfGoalsScored += homeMatch.AwayTeamGoals;
+            countOfGoalsConceded += homeMatch.HomeTeamGoals;
+            if (homeMatch.HomeTeamGoals < homeMatch.AwayTeamGoals)
+            {
+                countOfWins += 1;
+                countOfPoints += 3;
+                continue;
+            }
+            if (homeMatch.HomeTeamGoals > homeMatch.AwayTeamGoals)
+            {
+                countOfLoses += 1;
+                continue;
+            }
+            countOfDraws += 1;
+            countOfPoints += 1;
+        }
+        goalDifference = countOfGoalsScored - countOfGoalsConceded;
+        <tr>
+            <td>
+                @obj.Team.Name
+            </td>
+            <td>
+                @obj.Matches.Count
+            </td>
+            <td>
+                @countOfWins
+            </td>
+            <td>
+                @countOfDraws
+            </td>
+            <td>
+                @countOfLoses
+            </td>
+            <td>
+                @countOfGoalsScored
+            </td>
+            <td>
+                @countOfGoalsConceded
+            </td>
+            <td>
+                @goalDifference
+            </td>
+            <td>
+                @countOfPoints
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
