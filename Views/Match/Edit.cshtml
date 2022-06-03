@@ -1,0 +1,31 @@
+@model FootballLeagueManagementSystem.Models.Match
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<form method="post">
+    <div class="border p-3 mt-4">
+        <div class="row pb-2">
+            <h2 class="text-primary">Edit Match</h2>
+            <hr/>
+        </div>
+        <div class="mb-3">
+            <input type="hidden" asp-for="AwayTeam"/>
+            <input type="hidden" asp-for="HomeTeam"/>
+            <label>Home team name</label>
+            <input asp-for="HomeTeam.Name" class="form-control" disabled/>
+            <label>Away team name</label>
+            <input asp-for="AwayTeam.Name" class="form-control" disabled/>
+            <label>Home team goals scored</label>
+            <input asp-for="HomeTeamGoals" class="form-control"/>
+            <span asp-validation-for="HomeTeamGoals" class="text-danger"></span>
+            <label>Away team goals scored</label>
+            <input asp-for="AwayTeamGoals" class="form-control"/>
+            <span asp-validation-for="AwayTeamGoals" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 150px">Apply</button>
+        <a asp-controller="League" asp-action="Table" class="btn btn-secondary" style="width: 150px">Back</a>
+    </div>
+</form>

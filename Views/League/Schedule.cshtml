@@ -1,0 +1,63 @@
+@model HashSet<Match>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<div class="container p-3">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 class="text-primary">Team schedule</h2>
+        </div>
+    </div>
+
+
+<table class="table table-bordered table-striped" style="width: 100%">
+    <thead>
+    <tr>
+        <th>
+            Home team
+        </th>
+        <th>
+            Away team
+        </th>
+        <th>
+            Home team goals
+        </th>
+        <th>
+            Away team goals
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (Match obj in Model)
+    {
+        <tr>
+            <td>
+                @obj.HomeTeam.Name
+            </td>
+            <td>
+                @obj.AwayTeam.Name
+            </td>
+            <td>
+                @obj.HomeTeamGoals
+            </td>
+            <td>
+                @obj.AwayTeamGoals
+            </td>
+            <td>
+                <div class="w-75 btn-group" role="group">
+                    @if (!obj.IsPlayed)
+                    {
+                        <a asp-controller="Match" asp-action="Edit" asp-route-id="@obj.Id" class="btn btn-primary mx-2">Add result</a> 
+                    }
+                </div>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+</div>

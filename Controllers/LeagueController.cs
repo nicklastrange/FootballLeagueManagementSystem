@@ -28,12 +28,14 @@ public class LeagueController : Controller
         foreach (var t in league.TeamSet)
         {
             TeamWithMatches teamWithMatches = new TeamWithMatches();
-            List<Match> matches = league.Schedule.Where(match => match.AwayTeam == t || match.HomeTeam == t).ToList();
+            List<Match> matches = league.Schedule
+                .Where(match => match.IsPlayed && (match.AwayTeam == t || match.HomeTeam == t))
+                .ToList();
             teamWithMatches.Team = t;
             teamWithMatches.Matches = matches;
             teamWithMatchesList.Add(teamWithMatches);
         }
-        return View();
+        return View(teamWithMatchesList);
     }
     
     public IActionResult Start(int? id)
@@ -47,8 +49,8 @@ public class LeagueController : Controller
         HashSet<Match> schedule = new HashSet<Match>();
         foreach (var team in league.TeamSet)
         {
-            HashSet<Team> teamsWithoutCurrentTeam = league.TeamSet;
-            league.TeamSet.Remove(team);
+            HashSet<Team> teamsWithoutCurrentTeam = new HashSet<Team>(league.TeamSet);
+            teamsWithoutCurrentTeam.Remove(team);
             foreach (var team1 in teamsWithoutCurrentTeam)
             {
                 var homeMatch = new Match();
@@ -57,6 +59,12 @@ public class LeagueController : Controller
                 homeMatch.AwayTeam = team1;
                 awayMatch.AwayTeam = team;
                 awayMatch.HomeTeam = team1;
+                if (schedule
+                    .Any(x => (x.HomeTeam == homeMatch.HomeTeam && x.AwayTeam == homeMatch.AwayTeam) 
+                              || (x.HomeTeam == awayMatch.HomeTeam && x.AwayTeam == awayMatch.AwayTeam)))
+                {
+                    continue;
+                }
                 schedule.Add(homeMatch);
                 schedule.Add(awayMatch);
             }
@@ -69,7 +77,20 @@ public class LeagueController : Controller
         TempData["success"] = "Season started successfully!";
         return RedirectToAction("Index");
     }
-    
+
+    public IActionResult Schedule(int? id)
+    {
+        var matches = ctx.Matches.Include(x => x.AwayTeam)
+            .Include(x => x.HomeTeam)
+            .Where(x => x.HomeTeam.Id == id || x.AwayTeam.Id == id).ToHashSet();
+        if (matches == null)
+        {
+            return NotFound();
+        }
+
+        return View(matches);
+    }
+
     // GET
     public IActionResult Create()
     {
