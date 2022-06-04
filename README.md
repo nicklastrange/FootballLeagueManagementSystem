@@ -2,6 +2,8 @@
 
 Football League Management System (FLMS) is a simple app, that let users create and manage football leagues! 
 
+It is created in .NET MVC (unfortunetely).
+
 ## Create a league
 
 Create a league providing name, then add some teams!
