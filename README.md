@@ -45,6 +45,7 @@ Application is hosted via heroku, so you can just use this link!
 ## FYI
 
 This is just a simple project created because university forced me to do so, so don't hate me for lack of code quality! 🥰
+
 Anyway .NET is piece of crap, please don't code in this!
 
 
