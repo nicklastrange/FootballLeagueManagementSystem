@@ -2,12 +2,16 @@ using FootballLeagueManagementSystem.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var connectionString = "Host=" + Environment.GetEnvironmentVariable("DATABASE_URL")
+                               + ";Port=" + Environment.GetEnvironmentVariable("DATABASE_PORT")
+                               + ";Database=" + Environment.GetEnvironmentVariable("DATABASE_NAME")
+                               + ";Username=" + Environment.GetEnvironmentVariable("DATABASE_USERNAME")
+                               + ";Password="+Environment.GetEnvironmentVariable("DATABASE_PASSWORD")+";";
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(connectionString)
 );
 
 var app = builder.Build();
