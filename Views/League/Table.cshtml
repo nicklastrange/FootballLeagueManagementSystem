@@ -85,7 +85,10 @@
         }
         obj.goalDifference = obj.countOfGoalsScored - obj.countOfGoalsConceded;
     }
-    @foreach (TeamWithMatches obj in Model.OrderByDescending(x => x.countOfPoints).ThenByDescending(x => x.goalDifference).ThenByDescending(x => x.countOfGoalsScored))
+    @foreach (TeamWithMatches obj in Model.OrderByDescending(x => x.countOfPoints)
+        .ThenByDescending(x => x.goalDifference)
+        .ThenByDescending(x => x.countOfGoalsScored)
+        .ThenBy(x => x.Team.Name))
     {
         <tr>
             <td>

@@ -86,43 +86,26 @@ public class LeagueController : Controller
         return RedirectToAction("Index");
     }
     
-    public IActionResult Restart(int? id)
+    public IActionResult Clone(int? id)
     {
         League league = ctx.Leagues.Include(x => x.Schedule).Include(x => x.TeamList).First(league => league.Id == id);
-
-        List<Match> schedule = new List<Match>();
-        foreach (var team in league.TeamList)
-        {
-            List<Team> teamsWithoutCurrentTeam = new List<Team>(league.TeamList);
-            teamsWithoutCurrentTeam.Remove(team);
-            foreach (var team1 in teamsWithoutCurrentTeam)
-            {
-                var homeMatch = new Match();
-                var awayMatch = new Match();
-                homeMatch.HomeTeam = team;
-                homeMatch.AwayTeam = team1;
-                awayMatch.AwayTeam = team;
-                awayMatch.HomeTeam = team1;
-                if (schedule
-                    .Any(x => (x.HomeTeam == homeMatch.HomeTeam && x.AwayTeam == homeMatch.AwayTeam) 
-                              || (x.HomeTeam == awayMatch.HomeTeam && x.AwayTeam == awayMatch.AwayTeam)))
-                {
-                    continue;
-                }
-                schedule.Add(homeMatch);
-                schedule.Add(awayMatch);
-            }
-        }
-
+        
         var copyLeague = new League();
+        var copyTeams = new List<Team>();
+        league.TeamList.ForEach(x =>
+        {
+            Team newTeam = new Team();
+            newTeam.Name = x.Name;
+            newTeam.CreatedAt = x.CreatedAt;
+            copyTeams.Add(newTeam);
+        });
         copyLeague.Name = league.OriginalName;
         copyLeague.OriginalName = league.OriginalName;
-        copyLeague.TeamList = new List<Team>(league.TeamList);
-        copyLeague.Schedule = schedule;
-        copyLeague.IsStarted = true;
+        copyLeague.TeamList = copyTeams;
         ctx.Add(copyLeague);
+        ctx.Update(league);
         ctx.SaveChanges();
-        TempData["success"] = "Season started successfully!";
+        TempData["success"] = "League cloned successfully!";
         return RedirectToAction("Index");
     }
 
@@ -132,9 +115,7 @@ public class LeagueController : Controller
             .Include(x => x.TeamList)
             .First(x => x.Id == id);
 
-        var suffix = finishedLeague.CreatedAt.Year == DateTime.Now.Year
-            ? finishedLeague.CreatedAt.Year.ToString()
-            : finishedLeague.CreatedAt.Year + "/" + DateTime.Now.Year;
+        var suffix = DateTime.Now;
         finishedLeague.IsStarted = false;
         finishedLeague.IsFinished = true;
         finishedLeague.Name = finishedLeague.Name + " " + suffix;

@@ -15,55 +15,66 @@
         </div>
     </div>
 
-
-<table class="table table-bordered table-striped" style="width: 100%">
-    <thead>
-    <tr>
-        <th>
-            Team name
-        </th>
-        <th>
-            Number of teams
-        </th>
-        <th>
-            Season started
-        </th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (League obj in Model)
-    {
+@if (Model.Count > 0)
+{
+    <table class="table table-bordered table-striped" style="width: 100%">
+        <thead>
         <tr>
-            <td>
-                @obj.Name
-            </td>
-            <td>
-                @obj.TeamList.Count
-            </td>
-            <td>
-                @{var isStarted = obj.IsStarted ? "Yes" : "No"; }
-                @isStarted
-            </td>
-            <td>
-                <div class="w-75 btn-group" role="group">
-                    <a asp-controller="League" asp-action="Table" asp-route-id="@obj.Id" class="btn btn-primary mx-2">View</a>
-                    @if (!obj.IsStarted)
-                    {
-                        <a asp-controller="League" asp-action="AddTeam" asp-route-id="@obj.Id" class="btn btn-primary"><i class="bi bi-plus-square"></i> &nbsp; Add team</a>
-                        <a asp-controller="League" asp-action="Start" asp-route-id="@obj.Id" class="btn btn-primary">Start</a>
-                        <a asp-controller="League" asp-action="Edit" asp-route-id="@obj.Id" class="btn btn-primary mx-2"><i class="bi bi-pencil-square"></i>&nbsp; Edit</a>
-                        <a asp-controller="League" asp-action="Delete" asp-route-id="@obj.Id" class="btn btn-primary mx-2"><i class="bi bi-trash"></i>&nbsp; Remove</a>
-                    }
-                    @if (obj.IsStarted && !obj.IsFinished && obj.Schedule.All(x => x.IsPlayed))
-                    {
-                        <a asp-controller="League" asp-action="Finish" asp-route-id="@obj.Id" class="btn btn-primary mx-2">Finish</a>
-                    }
-                </div>
-            </td>
+            <th>
+                Team name
+            </th>
+            <th>
+                Number of teams
+            </th>
+            <th>
+                Season started
+            </th>
+            <th></th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (League obj in Model)
+        {
+            <tr>
+                <td>
+                    @obj.Name
+                </td>
+                <td>
+                    @obj.TeamList.Count
+                </td>
+                <td>
+                    @{var isStarted = obj.IsStarted ? "Yes" : "No"; }
+                    @isStarted
+                </td>
+                <td>
+                    <div class="w-75 btn-group" role="group">
+                        <a asp-controller="League" asp-action="Table" asp-route-id="@obj.Id" class="btn btn-primary mx-2">View</a>
+                        @if (!obj.IsStarted)
+                        {
+                            <a asp-controller="League" asp-action="AddTeam" asp-route-id="@obj.Id" class="btn btn-primary">Add team</a>
+                            if (obj.TeamList.Count > 1)
+                            {
+                                <a asp-controller="League" asp-action="Start" asp-route-id="@obj.Id" class="btn btn-primary">Start</a>
+                            }
+                            <a asp-controller="League" asp-action="Edit" asp-route-id="@obj.Id" class="btn btn-primary mx-2">Edit</a>
+                            <a asp-controller="League" asp-action="Delete" asp-route-id="@obj.Id" class="btn btn-primary mx-2">Remove</a>
+                        }
+                        @if (obj.IsStarted && !obj.IsFinished && obj.Schedule.All(x => x.IsPlayed))
+                        {
+                            <a asp-controller="League" asp-action="Finish" asp-route-id="@obj.Id" class="btn btn-primary mx-2">Finish</a>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+@if (Model.Count == 0)
+{
+    <div style="width: 100%; height: 70vh; display: flex; justify-content: center; align-items: center;">
+        <h3>No leagues found, consider creating one!</h3>
+    </div>
+}
 
 </div>
