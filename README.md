@@ -38,10 +38,6 @@ Only when all matches in the scheduled competition will be resolved, you can fin
 
 ![chrome_t2QOieUaEH](https://user-images.githubusercontent.com/63170610/172018188-2e2790d5-4414-4336-942d-b968bb28f5b8.png)
 
-## How to use this?
-
-Application is hosted via heroku, so you can just use this link!
-
 ## FYI
 
 This is just a simple project created because university forced me to do so, so don't hate me for lack of code quality! 🥰
