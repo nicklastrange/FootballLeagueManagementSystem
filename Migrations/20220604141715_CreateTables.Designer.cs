@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FootballLeagueManagementSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220602193534_CreateTables")]
+    [Migration("20220604141715_CreateTables")]
     partial class CreateTables
     {
         /// <inheritdoc />
@@ -36,10 +36,17 @@ namespace FootballLeagueManagementSystem.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsFinished")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsStarted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OriginalName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -139,7 +146,7 @@ namespace FootballLeagueManagementSystem.Migrations
             modelBuilder.Entity("FootballLeagueManagementSystem.Models.Team", b =>
                 {
                     b.HasOne("FootballLeagueManagementSystem.Models.League", null)
-                        .WithMany("TeamSet")
+                        .WithMany("TeamList")
                         .HasForeignKey("LeagueId");
                 });
 
@@ -147,7 +154,7 @@ namespace FootballLeagueManagementSystem.Migrations
                 {
                     b.Navigation("Schedule");
 
-                    b.Navigation("TeamSet");
+                    b.Navigation("TeamList");
                 });
 #pragma warning restore 612, 618
         }

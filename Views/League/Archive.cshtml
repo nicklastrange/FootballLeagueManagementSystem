@@ -1,4 +1,4 @@
-@model HashSet<FootballLeagueManagementSystem.Models.Match>
+@model List<League>
 
 @{
     ViewBag.Title = "title";
@@ -8,7 +8,7 @@
 <div class="container p-3">
     <div class="row pt-4">
         <div class="col-6">
-            <h2 class="text-primary">Team schedule</h2>
+            <h2 class="text-primary">Leagues archive</h2>
         </div>
     </div>
 
@@ -17,42 +17,35 @@
     <thead>
     <tr>
         <th>
-            Home team
+            Team name
         </th>
         <th>
-            Away team
+            Number of teams
         </th>
         <th>
-            Home team goals
-        </th>
-        <th>
-            Away team goals
+            Season started
         </th>
         <th></th>
     </tr>
     </thead>
     <tbody>
-    @foreach (Match obj in Model)
+    @foreach (League obj in Model)
     {
         <tr>
             <td>
-                @obj.HomeTeam.Name
+                @obj.Name
             </td>
             <td>
-                @obj.AwayTeam.Name
+                @obj.TeamList.Count
             </td>
             <td>
-                @obj.HomeTeamGoals
-            </td>
-            <td>
-                @obj.AwayTeamGoals
+                @{var isStarted = obj.IsStarted ? "Yes" : "No"; }
+                @isStarted
             </td>
             <td>
                 <div class="w-75 btn-group" role="group">
-                    @if (!obj.IsPlayed)
-                    {
-                        <a asp-controller="Match" asp-action="Edit" asp-route-id="@obj.Id" class="btn btn-primary mx-2">Add result</a> 
-                    }
+                    <a asp-controller="League" asp-action="Table" asp-route-id="@obj.Id" class="btn btn-primary mx-2">View</a>
+                    <a asp-controller="League" asp-action="Restart" asp-route-id="@obj.Id" class="btn btn-primary mx-2">Start new season</a>
                 </div>
             </td>
         </tr>

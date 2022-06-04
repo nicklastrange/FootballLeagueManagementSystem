@@ -9,8 +9,10 @@ public class League
     [Required]
     public string Name { get; set; }
 
-    public HashSet<Team> TeamSet { get; set; } = new HashSet<Team>();
-    public HashSet<Match> Schedule { get; set; } = new HashSet<Match>();
+    public string OriginalName { get; set; } = "";
+    public List<Team> TeamList { get; set; } = new List<Team>();
+    public List<Match> Schedule { get; set; } = new List<Match>();
     public Boolean IsStarted { get; set; } = false;
+    public Boolean IsFinished { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

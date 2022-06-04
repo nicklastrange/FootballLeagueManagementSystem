@@ -16,16 +16,28 @@ public class LeagueController : Controller
     // GET
     public IActionResult Index()
     {
-        List<League> leaguesList = ctx.Leagues.Include(x => x.TeamSet).ToList();
+        List<League> leaguesList = ctx.Leagues.Include(x => x.TeamList)
+            .Include(x => x.Schedule)
+            .Where(x => !x.IsFinished)
+            .ToList();
+        return View(leaguesList);
+    }
+    
+    public IActionResult Archive()
+    {
+        List<League> leaguesList = ctx.Leagues.Include(x => x.TeamList)
+            .Include(x => x.Schedule)
+            .Where(x => x.IsFinished)
+            .ToList();
         return View(leaguesList);
     }
     
     public IActionResult Table(int? id)
     {
-        League league = ctx.Leagues.Include(x => x.Schedule).Include(x => x.TeamSet).First(league => league.Id == id);
+        League league = ctx.Leagues.Include(x => x.Schedule).Include(x => x.TeamList).First(league => league.Id == id);
 
         List<TeamWithMatches> teamWithMatchesList = new List<TeamWithMatches>();
-        foreach (var t in league.TeamSet)
+        foreach (var t in league.TeamList)
         {
             TeamWithMatches teamWithMatches = new TeamWithMatches();
             List<Match> matches = league.Schedule
@@ -40,16 +52,12 @@ public class LeagueController : Controller
     
     public IActionResult Start(int? id)
     {
-        League league = ctx.Leagues.Include(x => x.Schedule).Include(x => x.TeamSet).First(league => league.Id == id);
-        if (league == null)
-        {
-            return NotFound();
-        }
+        League league = ctx.Leagues.Include(x => x.Schedule).Include(x => x.TeamList).First(league => league.Id == id);
 
-        HashSet<Match> schedule = new HashSet<Match>();
-        foreach (var team in league.TeamSet)
+        List<Match> schedule = new List<Match>();
+        foreach (var team in league.TeamList)
         {
-            HashSet<Team> teamsWithoutCurrentTeam = new HashSet<Team>(league.TeamSet);
+            List<Team> teamsWithoutCurrentTeam = new List<Team>(league.TeamList);
             teamsWithoutCurrentTeam.Remove(team);
             foreach (var team1 in teamsWithoutCurrentTeam)
             {
@@ -75,6 +83,64 @@ public class LeagueController : Controller
         ctx.Update(league);
         ctx.SaveChanges();
         TempData["success"] = "Season started successfully!";
+        return RedirectToAction("Index");
+    }
+    
+    public IActionResult Restart(int? id)
+    {
+        League league = ctx.Leagues.Include(x => x.Schedule).Include(x => x.TeamList).First(league => league.Id == id);
+
+        List<Match> schedule = new List<Match>();
+        foreach (var team in league.TeamList)
+        {
+            List<Team> teamsWithoutCurrentTeam = new List<Team>(league.TeamList);
+            teamsWithoutCurrentTeam.Remove(team);
+            foreach (var team1 in teamsWithoutCurrentTeam)
+            {
+                var homeMatch = new Match();
+                var awayMatch = new Match();
+                homeMatch.HomeTeam = team;
+                homeMatch.AwayTeam = team1;
+                awayMatch.AwayTeam = team;
+                awayMatch.HomeTeam = team1;
+                if (schedule
+                    .Any(x => (x.HomeTeam == homeMatch.HomeTeam && x.AwayTeam == homeMatch.AwayTeam) 
+                              || (x.HomeTeam == awayMatch.HomeTeam && x.AwayTeam == awayMatch.AwayTeam)))
+                {
+                    continue;
+                }
+                schedule.Add(homeMatch);
+                schedule.Add(awayMatch);
+            }
+        }
+
+        var copyLeague = new League();
+        copyLeague.Name = league.OriginalName;
+        copyLeague.OriginalName = league.OriginalName;
+        copyLeague.TeamList = new List<Team>(league.TeamList);
+        copyLeague.Schedule = schedule;
+        copyLeague.IsStarted = true;
+        ctx.Add(copyLeague);
+        ctx.SaveChanges();
+        TempData["success"] = "Season started successfully!";
+        return RedirectToAction("Index");
+    }
+
+    public IActionResult Finish(int? id)
+    {
+        var finishedLeague = ctx.Leagues.Include(x => x.Schedule)
+            .Include(x => x.TeamList)
+            .First(x => x.Id == id);
+
+        var suffix = finishedLeague.CreatedAt.Year == DateTime.Now.Year
+            ? finishedLeague.CreatedAt.Year.ToString()
+            : finishedLeague.CreatedAt.Year + "/" + DateTime.Now.Year;
+        finishedLeague.IsStarted = false;
+        finishedLeague.IsFinished = true;
+        finishedLeague.Name = finishedLeague.Name + " " + suffix;
+        ctx.Update(finishedLeague);
+        ctx.SaveChanges();
+        TempData["success"] = "Season successfully finished!";
         return RedirectToAction("Index");
     }
 
@@ -106,6 +172,8 @@ public class LeagueController : Controller
         {
             return View(league);
         }
+
+        league.OriginalName = league.Name;
         ctx.Leagues.Add(league);
         ctx.SaveChanges();
         TempData["success"] = "League created successfully!";
@@ -115,17 +183,9 @@ public class LeagueController : Controller
     // GET
     public IActionResult Edit(int? id)
     {
-        if (id == null || id == 0)
-        {
-            return NotFound();
-        }
-
-        var leagueFromDb = ctx.Leagues.Find(id);
-
-        if (leagueFromDb == null)
-        {
-            return NotFound();
-        }
+        var leagueFromDb = ctx.Leagues.Include(x => x.Schedule)
+            .Include(x => x.TeamList)
+            .First(x => x.Id == id);
         
         return View(leagueFromDb);
     }
@@ -139,7 +199,18 @@ public class LeagueController : Controller
         {
             return View(league);
         }
-        ctx.Leagues.Update(league);
+
+        var dbLeague = ctx.Leagues.Include(x => x.Schedule)
+            .Include(x => x.TeamList)
+            .First(x => x.Id == league.Id);
+        
+        dbLeague.Name = league.Name;
+        dbLeague.OriginalName = league.Name;
+        for (int i = 0; i < league.TeamList.Count; i++)
+        {
+            dbLeague.TeamList[i].Name = league.TeamList[i].Name;
+        }
+        ctx.Leagues.Update(dbLeague);
         ctx.SaveChanges();
         TempData["success"] = "League updated successfully!";
         return RedirectToAction("Index"); //we can add second parameter which defines controller of the action
@@ -148,17 +219,9 @@ public class LeagueController : Controller
     // GET
     public IActionResult Delete(int? id)
     {
-        if (id == null || id == 0)
-        {
-            return NotFound();
-        }
-
-        var leagueFromDb = ctx.Leagues.Find(id);
-
-        if (leagueFromDb == null)
-        {
-            return NotFound();
-        }
+        var leagueFromDb = ctx.Leagues.Include(x => x.TeamList)
+            .Include(x => x.Schedule)
+            .First(x => x.Id == id);
         
         return View(leagueFromDb);
     }
@@ -168,14 +231,13 @@ public class LeagueController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult DeletePost(int? id)
     {
-        var league = ctx.Leagues.Find(id);
+        var leagueFromDb = ctx.Leagues.Include(x => x.TeamList)
+            .Include(x => x.Schedule)
+            .First(x => x.Id == id);
 
-        if (league == null)
-        {
-            return NotFound();
-        }
-
-        ctx.Leagues.Remove(league);
+        ctx.Leagues.Remove(leagueFromDb);
+        leagueFromDb.TeamList.ForEach(x => ctx.Teams.Remove(x));
+        leagueFromDb.Schedule.ForEach(x => ctx.Matches.Remove(x));
         ctx.SaveChanges();
         TempData["success"] = "League removed successfully!";
         return RedirectToAction("Index"); //we can add second parameter which defines controller of the action
@@ -205,7 +267,7 @@ public class LeagueController : Controller
             return NotFound();
         }
 
-        league.TeamSet.Add(idWithTeam.team);
+        league.TeamList.Add(idWithTeam.team);
         ctx.Leagues.Update(league);
         ctx.SaveChanges();
         TempData["success"] = "Team added to a league successfully!";
@@ -231,6 +293,13 @@ public class IdWithTeam
 
 public class TeamWithMatches
 {
+    public int countOfWins { get; set; } = 0;
+    public int countOfDraws { get; set; } = 0;
+    public int countOfLoses { get; set; } = 0;
+    public int countOfGoalsScored { get; set; } = 0;
+    public int countOfGoalsConceded { get; set; } = 0;
+    public int countOfPoints { get; set; } = 0;
+    public int goalDifference { get; set; } = 0;
     public Team Team { get; set; }
     public List<Match> Matches { get; set; }
 }

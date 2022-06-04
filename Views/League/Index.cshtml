@@ -39,7 +39,7 @@
                 @obj.Name
             </td>
             <td>
-                @obj.TeamSet.Count
+                @obj.TeamList.Count
             </td>
             <td>
                 @{var isStarted = obj.IsStarted ? "Yes" : "No"; }
@@ -54,6 +54,10 @@
                         <a asp-controller="League" asp-action="Start" asp-route-id="@obj.Id" class="btn btn-primary">Start</a>
                         <a asp-controller="League" asp-action="Edit" asp-route-id="@obj.Id" class="btn btn-primary mx-2"><i class="bi bi-pencil-square"></i>&nbsp; Edit</a>
                         <a asp-controller="League" asp-action="Delete" asp-route-id="@obj.Id" class="btn btn-primary mx-2"><i class="bi bi-trash"></i>&nbsp; Remove</a>
+                    }
+                    @if (obj.IsStarted && !obj.IsFinished && obj.Schedule.All(x => x.IsPlayed))
+                    {
+                        <a asp-controller="League" asp-action="Finish" asp-route-id="@obj.Id" class="btn btn-primary mx-2">Finish</a>
                     }
                 </div>
             </td>

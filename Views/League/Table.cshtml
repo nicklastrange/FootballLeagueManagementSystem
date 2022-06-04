@@ -44,52 +44,49 @@
     <tbody>
     @foreach (TeamWithMatches obj in Model)
     {
-        var countOfWins = 0;
-        var countOfDraws = 0;
-        var countOfLoses = 0;
-        var countOfGoalsScored = 0;
-        var countOfGoalsConceded = 0;
-        var countOfPoints = 0;
-        var goalDifference = 0;
+        
         List<Match> homeMatches = obj.Matches.Where(m => m.HomeTeam == obj.Team).ToList();
         List<Match> awayMatches = obj.Matches.Where(m => m.AwayTeam == obj.Team).ToList();
         foreach (var homeMatch in homeMatches)
         {
-            countOfGoalsScored += homeMatch.HomeTeamGoals;
-            countOfGoalsConceded += homeMatch.AwayTeamGoals;
+            obj.countOfGoalsScored += homeMatch.HomeTeamGoals;
+            obj.countOfGoalsConceded += homeMatch.AwayTeamGoals;
             if (homeMatch.HomeTeamGoals > homeMatch.AwayTeamGoals)
             {
-                countOfWins += 1;
-                countOfPoints += 3;
+                obj.countOfWins += 1;
+                obj.countOfPoints += 3;
                 continue;
             }
             if (homeMatch.HomeTeamGoals < homeMatch.AwayTeamGoals)
             {
-                countOfLoses += 1;
+                obj.countOfLoses += 1;
                 continue;
             }
-            countOfDraws += 1;
-            countOfPoints += 1;
+            obj.countOfDraws += 1;
+            obj.countOfPoints += 1;
         }
         foreach (var homeMatch in awayMatches)
         {
-            countOfGoalsScored += homeMatch.AwayTeamGoals;
-            countOfGoalsConceded += homeMatch.HomeTeamGoals;
+            obj.countOfGoalsScored += homeMatch.AwayTeamGoals;
+            obj.countOfGoalsConceded += homeMatch.HomeTeamGoals;
             if (homeMatch.HomeTeamGoals < homeMatch.AwayTeamGoals)
             {
-                countOfWins += 1;
-                countOfPoints += 3;
+                obj.countOfWins += 1;
+                obj.countOfPoints += 3;
                 continue;
             }
             if (homeMatch.HomeTeamGoals > homeMatch.AwayTeamGoals)
             {
-                countOfLoses += 1;
+                obj.countOfLoses += 1;
                 continue;
             }
-            countOfDraws += 1;
-            countOfPoints += 1;
+            obj.countOfDraws += 1;
+            obj.countOfPoints += 1;
         }
-        goalDifference = countOfGoalsScored - countOfGoalsConceded;
+        obj.goalDifference = obj.countOfGoalsScored - obj.countOfGoalsConceded;
+    }
+    @foreach (TeamWithMatches obj in Model.OrderByDescending(x => x.countOfPoints).ThenByDescending(x => x.goalDifference).ThenByDescending(x => x.countOfGoalsScored))
+    {
         <tr>
             <td>
                 @obj.Team.Name
@@ -98,25 +95,25 @@
                 @obj.Matches.Count
             </td>
             <td>
-                @countOfWins
+                @obj.countOfWins
             </td>
             <td>
-                @countOfDraws
+                @obj.countOfDraws
             </td>
             <td>
-                @countOfLoses
+                @obj.countOfLoses
             </td>
             <td>
-                @countOfGoalsScored
+                @obj.countOfGoalsScored
             </td>
             <td>
-                @countOfGoalsConceded
+                @obj.countOfGoalsConceded
             </td>
             <td>
-                @goalDifference
+                @obj.goalDifference
             </td>
             <td>
-                @countOfPoints
+                @obj.countOfPoints
             </td>
             <td>
                 <a asp-controller="League" asp-action="Schedule" asp-route-id="@obj.Team.Id" class="btn btn-primary mx-2">View</a>

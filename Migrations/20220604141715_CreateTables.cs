@@ -19,7 +19,9 @@ namespace FootballLeagueManagementSystem.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
+                    OriginalName = table.Column<string>(type: "text", nullable: false),
                     IsStarted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsFinished = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
